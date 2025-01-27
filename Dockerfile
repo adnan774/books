@@ -1,4 +1,11 @@
+# Use a base image with Java installed
 FROM amazoncorretto:17
-ADD target/springbootdocker-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8080
-CMD ["java","-jar","-Dspring.profiles.active=prod", "app.jar"]
+
+# Specify the location of the JAR file
+ARG JAR_FILE=target/pets-1.0.0-SNAPSHOT.jar
+
+# Copy the JAR file into the Docker image
+COPY ${JAR_FILE} app.jar
+
+# Set the command to run the JAR
+ENTRYPOINT ["java", "-jar", "/app.jar"]
