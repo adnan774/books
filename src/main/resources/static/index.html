@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Management</title>
+  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container my-5">
+        <!-- Header -->
+        <header class="text-center mb-5">
+            <h1 class="text-primary"><i class="bi bi-book"></i> Book Management</h1>
+            <p class="text-secondary">Manage your book collection effortlessly</p>
+        </header>
+
+        <!-- Add Book Form -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Add a New Book</h4>
+            </div>
+            <div class="card-body">
+                <form id="addBookForm" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" id="title" class="form-control" placeholder="Book Title" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="author" class="form-control" placeholder="Author" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" step="0.01" id="price" class="form-control" placeholder="Price" required>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="desc" class="form-control" placeholder="Description" required>
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="button" class="btn btn-success" onclick="addBook()">
+                            <i class="bi bi-plus-circle"></i> Add Book
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+      
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="bi bi-journal-bookmark"></i> All Books</h4>
+                <button class="btn btn-light" onclick="getAllBooks()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh List
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0" id="booksTable">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Price</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_URL = '/api/books';
+
+        // Fetch all books and display them
+        function getAllBooks() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#booksTable tbody');
+                    tableBody.innerHTML = ''; 
+
+                    data.forEach(book => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${book.bookid}</td>
+                            <td>${book.title}</td>
+                            <td>${book.author}</td>
+                            <td>${book.price}</td>
+                            <td>${book.desc}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteBook(${book.bookid})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching books:', error));
+        }
+
+        // Add a new book
+        function addBook() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const price = document.getElementById('price').value;
+            const desc = document.getElementById('desc').value;
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, author, price, desc })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Book added successfully!');
+                        getAllBooks(); 
+                        document.getElementById('addBookForm').reset();
+                    } else {
+                        alert('Error adding book');
+                    }
+                })
+                .catch(error => console.error('Error adding book:', error));
+        }
+
+        // Delete a book by ID
+        function deleteBook(bookId) {
+            if (!confirm('Are you sure you want to delete this book?')) {
+                return;
+            }
+
+            fetch(`${API_URL}/${bookId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Book deleted successfully!');
+                        getAllBooks(); 
+                    } else {
+                        alert('Error deleting book');
+                    }
+                })
+                .catch(error => console.error('Error deleting book:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', getAllBooks);
+    </script>
+</body>
+</html>
